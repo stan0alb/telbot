@@ -1,17 +1,28 @@
-import telebot
+from aiogram import Bot, types
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
 
-bot = telebot.TeleBot(config.TOKEN)
+from config import TOKEN
 
-@bot.message_handler(commands=['test'])
-def find_file_ids(message):
-    for file in os.listdir('music/'):
-        if file.split('.')[-1] == 'ogg':
-            f = open('music/'+file, 'rb')
-            msg = bot.send_voice(message.chat.id, f, None)
-            # А теперь отправим вслед за файлом его file_id
-            bot.send_message(message.chat.id, msg.voice.file_id, reply_to_message_id=msg.message_id)
-        time.sleep(3)
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
+
+
+@dp.message_handler(commands=['start'])
+async def process_start_command(message: types.Message):
+    await message.reply("Привет!\nНапиши мне что-нибудь!")
+
+
+@dp.message_handler(commands=['help'])
+async def process_help_command(message: types.Message):
+    await message.reply("Напиши мне что-нибудь, и я отпрпавлю этот текст тебе в ответ!")
+
+
+@dp.message_handler()
+async def echo_message(msg: types.Message):
+    await bot.send_message(msg.from_user.id, msg.text)
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    executor.start_polling(dp)
